@@ -1,1 +1,1 @@
-# virtual-store-customer
+# vitual-store-customer
