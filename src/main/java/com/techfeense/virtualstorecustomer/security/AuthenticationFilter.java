@@ -3,6 +3,8 @@ package com.techfeense.virtualstorecustomer.security;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -54,11 +56,16 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter{
 			Authentication auth) throws IOException, ServletException {
 		String userName = ((User) auth.getPrincipal()).getUsername();
 		UserDto userDetails = usersService.getUserDetailsByEmail(userName);
+		
+		Map<String, Object> claims = new HashMap<>();
+		claims.put("role", userDetails.getRole());
+		claims.put("subject", userDetails.getUserId());
+		
 		System.out.println("token.secret = " + environment.getProperty("token.secret"));
 		String token = Jwts.builder()
-				.setSubject(userDetails.getUserId())
 				.setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(environment.getProperty("token.expiration_time"))))
 				.signWith(SignatureAlgorithm.HS512, environment.getProperty("token.secret"))
+				.setClaims(claims)
 				.compact();
 		response.addHeader("token", token);
 		response.addHeader("userId", userDetails.getUserId());
